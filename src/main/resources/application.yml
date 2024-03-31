@@ -1,0 +1,12 @@
+spring:
+  application:
+    name:
+      knyhozbirnia
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+    open-in-view: true
+    hibernate:
+      ddl-auto: none

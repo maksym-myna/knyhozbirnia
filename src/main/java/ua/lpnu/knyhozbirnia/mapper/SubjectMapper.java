@@ -8,11 +8,25 @@ import ua.lpnu.knyhozbirnia.model.Subject;
 @Service
 public class SubjectMapper {
     public Subject toEntity(SubjectRequest subjectRequest){
+        return toEntity(subjectRequest, null);
+    }
+
+    public Subject toEntity(SubjectRequest subjectRequest, Integer id){
         return Subject
                 .builder()
+                .id(id)
                 .name(subjectRequest.name())
                 .build();
     }
+
+//    public Subject toEntity(SubjectResponse subjectResponse){
+//        return Subject
+//                .builder()
+//                .id(subjectResponse.id())
+//                .name(subjectResponse.name())
+//                .build();
+//    }
+
     public SubjectResponse toResponse(Subject subject){
         return SubjectResponse
                 .builder()

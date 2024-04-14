@@ -1,20 +1,21 @@
 package ua.lpnu.knyhozbirnia.mapper;
 
 import org.springframework.stereotype.Service;
-import ua.lpnu.knyhozbirnia.dto.author.AuthorResponse;
 import ua.lpnu.knyhozbirnia.dto.publisher.PublisherRequest;
 import ua.lpnu.knyhozbirnia.dto.publisher.PublisherResponse;
-import ua.lpnu.knyhozbirnia.dto.subject.SubjectResponse;
-import ua.lpnu.knyhozbirnia.model.Author;
 import ua.lpnu.knyhozbirnia.model.Publisher;
-import ua.lpnu.knyhozbirnia.model.Subject;
 
 @Service
 public class PublisherMapper {
 
-    public Publisher toEntity(PublisherRequest publisherRequest){
+//    public Publisher toEntity(PublisherRequest publisherRequest){
+//        return toEntity(publisherRequest, null);
+//    }
+
+    public Publisher toEntity(PublisherRequest publisherRequest, Integer id){
         return Publisher
                 .builder()
+                .id(id)
                 .name(publisherRequest.name())
                 .build();
     }

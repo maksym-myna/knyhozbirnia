@@ -3,18 +3,13 @@ package ua.lpnu.knyhozbirnia.model;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 import ua.lpnu.knyhozbirnia.contstants.JpaValidationErrorMessages;
 
 @Entity
@@ -23,9 +18,11 @@ import ua.lpnu.knyhozbirnia.contstants.JpaValidationErrorMessages;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class Language {
     @Id
-    @Column(name = "language_id", length = 3)
+    @Column(name = "language_id", length = 3, unique=true)
+    @Size(min = 3, max = 3, message = JpaValidationErrorMessages.EXACT_LENGTH_VALUE_CONSTRAINT_VIOLATION)
     private String id;
 
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
@@ -35,16 +32,21 @@ public class Language {
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     private Long speakers;
 
-    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
-    @Temporal(TemporalType.TIMESTAMP)
+//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
-    @Column(name = "added_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime addedAt;
+    @Column(name = "modified_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime modifiedAt;
 
     @OneToMany(mappedBy = "language", fetch = FetchType.LAZY)
     @JsonBackReference
 //    @JsonIgnore
     private Set<Work> works = new HashSet<>();
+
+    @PrePersist
+    @PreUpdate
+    public void updateTimestamps() {
+        modifiedAt = LocalDateTime.now();
+    }
 
 //    @JsonProperty("work_ids")
 //    public Set<Integer> getWorkIds() {

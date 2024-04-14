@@ -11,33 +11,28 @@ import ua.lpnu.knyhozbirnia.service.LanguageService;
 import ua.lpnu.knyhozbirnia.service.PublisherService;
 import ua.lpnu.knyhozbirnia.service.SubjectService;
 
-import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class WorkMapper {
     private final AuthorService authorService;
-    private final AuthorMapper authorMapper;
     private final SubjectService subjectService;
-    private final SubjectMapper subjectMapper;
     private final LanguageService languageService;
     private final LanguageMapper languageMapper;
     private final PublisherService publisherService;
     private final PublisherMapper publisherMapper;
 
-    public Work toEntity(WorkRequest request) {
-        return toEntity(request, null);
-    }
 
     public Work toEntity(WorkRequest request, Integer id) {
-        var authors = authorService.getByNames(request.authors().stream().map(AuthorRequest::fullName).toList());
-        var subjects = subjectService.getByNames(request.subjects().stream().map(SubjectRequest::name).toList());
-        var language = languageService.getById(request.language().id());
-        var publisher = publisherService.getByName(request.publisher().name());
+        var authors = authorService.getByNames(request.authors().stream().map(AuthorRequest::name).toList());
+        var subjects = subjectService.getSubjectsByNames(request.subjects().stream().map(SubjectRequest::name).toList());
+        var language = languageMapper.toEntity(languageService.getLanguage(request.language().id()));
+        var publisher = publisherMapper.toEntity(publisherService.getPublisherByName(request.publisher().name()));
         return Work
                 .builder()
                 .id(id)
-                .addedAt(LocalDateTime.now())
+//                .modifiedAt(LocalDateTime.now())
                 .pages(request.pages())
                 .isbn(request.isbn())
                 .title(request.title())
@@ -47,10 +42,11 @@ public class WorkMapper {
                 .subjects(subjects)
                 .language(language)
                 .publisher(publisher)
-                .copies((long)request.copies().quantity())
+                .copies((long)request.quantity())
+                .medium(request.medium())
                 .currentlyReading(0L)
-                .wantToRead(0.0)
-                .alreadyRead(0.0)
+                .wantToRead(0L)
+                .alreadyRead(0L)
                 .rating(0.0)
                 .scored(0L)
                 .build();
@@ -60,44 +56,23 @@ public class WorkMapper {
         return WorkResponse
                 .builder()
                 .id(work.getId())
-                .addedAt(work.getAddedAt())
+                .modifiedAt(work.getModifiedAt())
                 .pages(work.getPages())
                 .isbn(work.getIsbn())
-                .language(languageMapper.toResponse(work.getLanguage()))
+                .language(languageMapper.toNameResponse(work.getLanguage()))
                 .title(work.getTitle())
                 .weight(work.getWeight())
                 .publisher(publisherMapper.toResponse(work.getPublisher()))
                 .releaseYear(work.getReleaseYear())
-                .authors(work.getAuthors().stream().map(authorMapper::toResponse).toList())
+                .authors(work.getAuthors().stream().map(Author::getName).collect(Collectors.toSet()))
+                .subjects(work.getSubjects().stream().map(Subject::getName).collect(Collectors.toSet()))
                 .wantToRead(work.getWantToRead())
                 .currentlyReading(work.getCurrentlyReading())
                 .alreadyRead(work.getAlreadyRead())
                 .scored(work.getScored())
                 .rating(work.getRating())
                 .copies(work.getCopies())
-                .subjects(work.getSubjects().stream().map(subjectMapper::toResponse).toList())
-//                .ratings(work.getRatings().stream().map(this::ratingToResponse).collect(Collectors.toSet()))
-//                .listings(work.getListings().stream().map(this::listingToResponse).collect(Collectors.toSet()))
-                .build();
-    }
-
-    public WorkRatingResponse ratingToResponse(Rating rating){
-        return WorkRatingResponse
-                .builder()
-                .id(rating.getId())
-                .score(rating.getScore())
-                .ratedAt(rating.getListedAt())
-                .userId(rating.getUser().getId())
-                .build();
-    }
-
-    public WorkListingResponse listingToResponse(Listing listing){
-        return WorkListingResponse
-                .builder()
-                .id(listing.getId())
-                .readingStatus(listing.getReadingStatus())
-                .listedAt(listing.getListedAt())
-                .userId(listing.getUser().getId())
+                .availableCopies(work.getAvailableCopies())
                 .build();
     }
 }

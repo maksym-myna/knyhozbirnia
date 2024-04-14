@@ -1,14 +1,10 @@
 package ua.lpnu.knyhozbirnia.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ua.lpnu.knyhozbirnia.contstants.JpaValidationErrorMessages;
 
 import java.time.LocalDateTime;
@@ -20,6 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class Loan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,24 +35,17 @@ public class Loan {
     @JsonBackReference
     private InventoryItem inventoryItem;
 
-    @NotNull(message = JpaValidationErrorMessages.FOREIGN_KEY_NOT_NULL_CONSTRAINT_VIOLATION)
-    @Temporal(TemporalType.TIMESTAMP)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "loaned_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime loanedAt;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "returned_at", table = "loan_return")
     private LocalDateTime returnedAt;
 
-    @JsonProperty("user_id")
-    public Integer getUserId() {
-        return user != null ? user.getId() : null;
-    }
-
-    @JsonProperty("item_id")
-    public Integer getItemId() {
-        return inventoryItem != null ? inventoryItem.getId() : null;
+    @PrePersist
+    @PreUpdate
+    public void updateTimestamps() {
+        loanedAt = LocalDateTime.now();
     }
 }

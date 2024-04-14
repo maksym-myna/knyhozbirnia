@@ -1,3 +1,3 @@
 package ua.lpnu.knyhozbirnia.dto.rating;
 
-public class RatingRequest {}
+public record RatingRequest(Integer workId, Integer score) {}

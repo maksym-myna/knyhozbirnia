@@ -2,29 +2,47 @@ package ua.lpnu.knyhozbirnia.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ua.lpnu.knyhozbirnia.model.Author;
-import ua.lpnu.knyhozbirnia.repository.AuthorRepository;
-
-import java.util.List;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.*;
+import ua.lpnu.knyhozbirnia.dto.author.AuthorRequest;
+import ua.lpnu.knyhozbirnia.dto.author.AuthorResponse;
+import ua.lpnu.knyhozbirnia.service.AuthorService;
 
 @RestController
 @RequestMapping("/authors/")
 @AllArgsConstructor
 public class AuthorController {
-    private AuthorRepository authorRepository;
+    private AuthorService authorService;
 
     @GetMapping
-    public List<Author> getAuthors(Pageable pageable) {
-        return authorRepository.findAll(pageable).getContent();
+    public Slice<AuthorResponse> getAuthors(
+            @PageableDefault(size = 25) Pageable pageable) {
+        return authorService.getAllAuthors(pageable);
     }
 
     @GetMapping("{id}/")
-    public Author getAuthor(@PathVariable Integer id) {
-        return authorRepository.findById(id).orElseThrow();
+    public AuthorResponse getAuthor(@PathVariable Integer id) {
+        return authorService.getAuthorById(id);
     }
 
+    @GetMapping("name/{name}/")
+    public AuthorResponse getAuthorByName(@PathVariable String name) {
+        return authorService.getAuthorByName(name);
+    }
+
+    @PostMapping
+    public AuthorResponse createAuthor(@RequestBody AuthorRequest author) {
+        return authorService.addAuthor(author);
+    }
+
+    @PutMapping("{id}/")
+    public AuthorResponse updateAuthor(@PathVariable Integer id, @RequestBody AuthorRequest author) {
+        return authorService.updateAuthor(author, id);
+    }
+
+    @DeleteMapping("{id}/")
+    public void deleteAuthor(@PathVariable Integer id) {
+        authorService.deleteAuthor(id);
+    }
 }

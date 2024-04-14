@@ -1,3 +1,5 @@
 package ua.lpnu.knyhozbirnia.dto.listing;
 
-public class ListingRequest {}
+import ua.lpnu.knyhozbirnia.model.ReadingStatus;
+
+public record ListingRequest(Integer workId, ReadingStatus status) {}

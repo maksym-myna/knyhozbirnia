@@ -4,10 +4,8 @@ package ua.lpnu.knyhozbirnia.model;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.ColumnTransformer;
 import ua.lpnu.knyhozbirnia.contstants.JpaValidationErrorMessages;
 
 import java.time.LocalDateTime;
@@ -21,6 +19,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,20 +41,24 @@ public class User {
 
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @Email(message = JpaValidationErrorMessages.EMAIL_CONSTRAINT_VIOLATION)
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
-    @Temporal(TemporalType.TIMESTAMP)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
-    @Column(name = "birthday", unique = true)
+    @Column(name = "birthday")
     private LocalDateTime birthday;
 
+    @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write="?::user_role_domain")
+    @Column(columnDefinition = "user_role_domain", name = "role")
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
-    @Temporal(TemporalType.TIMESTAMP)
+    private UserRole userRole;
+
+//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
-    @Column(name = "added_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime addedAt;
+    @Column(name = "modified_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime modifiedAt;
 
     @Column(name = "pfp_url", table = "pfp")
     private String pfpUrl;
@@ -72,7 +75,9 @@ public class User {
     @JsonManagedReference
     private Set<Loan> loans = new HashSet<>();
 
-    public String getPfpUrl() {
-        return pfpUrl != null ? pfpUrl : "default_url";
+    @PrePersist
+    @PreUpdate
+    public void updateTimestamps() {
+        modifiedAt = LocalDateTime.now();
     }
 }

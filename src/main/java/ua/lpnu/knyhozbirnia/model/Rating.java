@@ -9,10 +9,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ua.lpnu.knyhozbirnia.contstants.JpaValidationErrorMessages;
 
 import java.time.LocalDateTime;
@@ -23,6 +20,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,11 +32,10 @@ public class Rating {
     @Max(value = 5, message = JpaValidationErrorMessages.MAXIMUM_SIZE_CONSTRAINT_VIOLATION)
     private Integer score;
 
-    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
-    @Temporal(TemporalType.TIMESTAMP)
+//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "rated_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime listedAt;
+    private LocalDateTime ratedAt;
 
     @ManyToOne
     @NotNull(message = JpaValidationErrorMessages.FOREIGN_KEY_NOT_NULL_CONSTRAINT_VIOLATION)
@@ -51,6 +48,12 @@ public class Rating {
     @NotNull(message = JpaValidationErrorMessages.FOREIGN_KEY_NOT_NULL_CONSTRAINT_VIOLATION)
     @JsonBackReference
     private Work work;
+
+    @PrePersist
+    @PreUpdate
+    public void updateTimestamps() {
+        ratedAt = LocalDateTime.now();
+    }
 
     @JsonProperty("user_id")
     public Integer getUserId() {

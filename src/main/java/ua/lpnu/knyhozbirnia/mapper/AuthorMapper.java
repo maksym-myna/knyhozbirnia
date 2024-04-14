@@ -5,16 +5,18 @@ import ua.lpnu.knyhozbirnia.dto.author.AuthorRequest;
 import ua.lpnu.knyhozbirnia.dto.author.AuthorResponse;
 import ua.lpnu.knyhozbirnia.model.Author;
 
-import java.time.LocalDateTime;
-
 @Service
 public class AuthorMapper {
-
     public Author toEntity(AuthorRequest authorRequest){
+        return toEntity(authorRequest, null);
+    }
+
+    public Author toEntity(AuthorRequest authorRequest, Integer id){
         return Author
                 .builder()
-                .fullName(authorRequest.fullName())
-                .addedAt(LocalDateTime.now())
+                .id(id)
+                .name(authorRequest.name())
+//                .modifiedAt(LocalDateTime.now())
                 .build();
     }
 
@@ -22,7 +24,7 @@ public class AuthorMapper {
         return AuthorResponse
                 .builder()
                 .id(author.getId())
-                .fullName(author.getFullName())
+                .name(author.getName())
                 .build();
     }
 }

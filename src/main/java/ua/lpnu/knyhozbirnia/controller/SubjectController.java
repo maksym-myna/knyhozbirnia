@@ -2,30 +2,47 @@ package ua.lpnu.knyhozbirnia.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ua.lpnu.knyhozbirnia.model.Subject;
-import ua.lpnu.knyhozbirnia.repository.PublisherRepository;
-import ua.lpnu.knyhozbirnia.repository.SubjectRepository;
-
-import java.util.List;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.*;
+import ua.lpnu.knyhozbirnia.dto.subject.SubjectRequest;
+import ua.lpnu.knyhozbirnia.dto.subject.SubjectResponse;
+import ua.lpnu.knyhozbirnia.service.SubjectService;
 
 @RestController
 @RequestMapping("/subjects/")
 @AllArgsConstructor
 public class SubjectController {
-    private SubjectRepository subjectRepository;
-//    private SubjectMapper subjectMapper;
+    private SubjectService subjectService;
 
     @GetMapping
-    public List<Subject> getSubjects(Pageable pageable) {
-        return subjectRepository.findAll(pageable).getContent();
-    }
-    @GetMapping("{id}/")
-    public Subject getSubject(@PathVariable Integer id) {
-        return subjectRepository.findById(id).orElseThrow();
+    public Slice<SubjectResponse> getSubjects(
+            @PageableDefault(size = 25) Pageable pageable) {
+        return subjectService.getAllSubjects(pageable);
     }
 
+    @GetMapping("{id}/")
+    public SubjectResponse getSubject(@PathVariable Integer id) {
+        return subjectService.getSubjectById(id);
+    }
+
+    @GetMapping("name/{name}/")
+    public SubjectResponse getSubjectByName(@PathVariable String name) {
+        return subjectService.getSubjectByName(name);
+    }
+
+    @PostMapping
+    public SubjectResponse createSubject(@RequestBody SubjectRequest subject) {
+        return subjectService.addSubject(subject);
+    }
+
+    @PutMapping("{id}/")
+    public SubjectResponse updateSubject(@PathVariable Integer id, @RequestBody SubjectRequest subject) {
+        return subjectService.updateSubject(subject, id);
+    }
+
+    @DeleteMapping("{id}/")
+    public void deleteSubject(@PathVariable Integer id) {
+        subjectService.deleteSubject(id);
+    }
 }

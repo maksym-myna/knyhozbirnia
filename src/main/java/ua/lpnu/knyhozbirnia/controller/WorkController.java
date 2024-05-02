@@ -9,6 +9,7 @@ import ua.lpnu.knyhozbirnia.dto.work.PartialWorkResponse;
 import ua.lpnu.knyhozbirnia.dto.work.WorkRequest;
 import ua.lpnu.knyhozbirnia.dto.work.WorkResponse;
 import ua.lpnu.knyhozbirnia.model.WorkMedium;
+import ua.lpnu.knyhozbirnia.service.AsyncService;
 import ua.lpnu.knyhozbirnia.service.WorkService;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class WorkController {
     private WorkService workService;
+    private final AsyncService asyncService;
 
     @GetMapping
     public Slice<PartialWorkResponse> getWorks(
@@ -71,12 +73,23 @@ public class WorkController {
 
     @PostMapping
     public WorkResponse addWork(@RequestBody WorkRequest workRequest) {
-        return workService.addWork(workRequest);
+        var work = workService.addWork(workRequest);
+        asyncService.refreshCopiesAsync();
+        return work;
     }
 
     @PutMapping("{id}/")
     public WorkResponse editWork(@PathVariable Integer id, @RequestBody WorkRequest workRequest) {
-        return workService.upsertWork(workRequest, id);
+        var work = workService.upsertWork(workRequest, id);
+        asyncService.refreshCopiesAsync();
+        return work;
+    }
+
+    @PutMapping("isbn/{isbn}/")
+    public WorkResponse editWork(@PathVariable String isbn, @RequestBody WorkRequest workRequest) {
+        var work = workService.upsertWork(workRequest, isbn);
+        asyncService.refreshCopiesAsync();
+        return work;
     }
 
     @DeleteMapping("{id}/")

@@ -107,12 +107,22 @@ public class WorkService {
     @Transactional
     @Modifying
     public WorkResponse addWork(WorkRequest workRequest) {
-        return upsertWork(workRequest, null);
+        return upsertWork(workRequest, -1);
+    }
+
+    @Transactional
+    @Modifying
+    public WorkResponse upsertWork(WorkRequest workRequest, String isbn) {
+            WorkResponse work = workRepository.findWorkByIsbn(isbn).orElseThrow();
+            return upsertWork(workRequest, work.id());
     }
 
     @Transactional
     @Modifying
     public WorkResponse upsertWork(WorkRequest workRequest, Integer id) {
+        if (id == -1) {
+            id = null;
+        }
         Work mappedWork = workMapper.toEntity(workRequest, id);
         if (mappedWork.getLanguage() == null) {
             throw new ConstraintViolationException(RuntimeExceptionMessages.LANGUAGE_IS_REQUIRED_EXCEPTION_MESSAGE, null);
@@ -128,6 +138,7 @@ public class WorkService {
 
         Work savedWork = workRepository.save(mappedWork);
 
+        System.out.println(workRequest.quantity());
         itemService.addItems(savedWork, workRequest.quantity());
 
         return workMapper.toResponse(savedWork);

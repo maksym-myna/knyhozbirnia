@@ -35,21 +35,27 @@ public class LoanController {
 
     @PostMapping("{work_id}/")
     public LoanResponse loanWork(@PathVariable("work_id") Integer workId) {
-        return loanService.loanWork(workId);
+        var loan = loanService.loanWork(workId);
+        loanService.refreshCopies();
+        return loan;
     }
 
     @PostMapping("{loan_id}/return/")
     public LoanResponse returnWork(@PathVariable("loan_id") Integer loanId) {
-        return loanService.returnWork(loanId);
+        var loan = loanService.returnWork(loanId);
+        loanService.refreshCopies();
+        return loan;
     }
 
     @DeleteMapping("{loan_id}/")
     public void deleteLoan(@PathVariable("loan_id") Integer loanId) {
         loanService.deleteLoan(loanId);
+        loanService.refreshCopies();
     }
 
     @DeleteMapping("{loan_id}/return/")
     public void deleteReturn(@PathVariable("loan_id") Integer loanId) {
         loanService.deleteReturn(loanId);
+        loanService.refreshCopies();
     }
 }

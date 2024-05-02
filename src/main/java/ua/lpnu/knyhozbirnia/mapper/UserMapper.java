@@ -31,10 +31,14 @@ public class UserMapper {
     }
 
     public UserResponse toResponse(User user) {
-        return new UserResponse(user, defaultProperties.getPfp().getOrDefault(user.getGender(), null));
+        return user.getPfpUrl() == null
+                ? new UserResponse(user, defaultProperties.getPfp().getOrDefault(user.getGender(), null))
+                : new UserResponse(user);
     }
     public UserResponse setPfp(UserResponse user) {
-        user.setPfpUrl(defaultProperties.getPfp().getOrDefault(user.getGender(), null));
+        if (user.getPfpUrl() == null) {
+            user.setPfpUrl(defaultProperties.getPfp().getOrDefault(user.getGender(), null));
+        }
         return user;
     }
 }

@@ -1,6 +1,8 @@
 package ua.lpnu.knyhozbirnia.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
@@ -21,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
-
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Publisher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +39,6 @@ public class Publisher {
     @JsonBackReference
     private Set<Work> works = new HashSet<>();
 
-    //    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "modified_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime modifiedAt;
@@ -47,8 +48,4 @@ public class Publisher {
     public void updateTimestamps() {
         modifiedAt = LocalDateTime.now();
     }
-//    @JsonProperty("work_ids")
-//    public Set<Integer> getWorkIds() {
-//        return works != null ? works.stream().map(Work::getId).collect(Collectors.toSet()) : null;
-//    }
 }

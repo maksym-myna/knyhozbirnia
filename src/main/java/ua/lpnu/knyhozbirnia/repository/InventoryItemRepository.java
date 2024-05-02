@@ -12,7 +12,7 @@ import ua.lpnu.knyhozbirnia.model.InventoryItem;
 @Repository
 public interface InventoryItemRepository extends JpaRepository<InventoryItem, Integer> {
     String SELECT_ITEMS_QUERY = """
-        SELECT new ua.lpnu.knyhozbirnia.dto.item.InventoryItemResponse(ii.id, ii.modifiedAt)
+        SELECT new ua.lpnu.knyhozbirnia.dto.item.InventoryItemResponse(ii.id)
         FROM InventoryItem ii
     """;
     String FILTER_BY_WORK_ID_CLAUSE = "WHERE ii.work.id = :workId";
@@ -27,35 +27,6 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, In
     @Query(SELECT_ITEM_QUERY)
     InventoryItemResponse findItemById(@Param("id") Integer id);
 
-//    @Query(nativeQuery = true, value = """
-//    WITH latest_loans AS (
-//        SELECT
-//            l.*,
-//            ROW_NUMBER() OVER(PARTITION BY l.item_id ORDER BY l.loaned_at DESC) as rn,
-//            w.medium
-//        FROM
-//            loan l
-//        JOIN
-//            inventory_item ii ON ii.item_id = l.item_id
-//        JOIN
-//            work w ON w.work_id = ii.work_id
-//        WHERE
-//            w.work_id = :workId
-//    )
-//    SELECT
-//        ii.*
-//    FROM
-//        latest_loans ll
-//    LEFT JOIN
-//        loan_return lr USING (loan_id)
-//    JOIN
-//        inventory_item ii USING (item_id)
-//    WHERE
-//        ll.rn = 1
-//    AND
-//        lr.returned_at IS NOT NULL
-//    LIMIT 1;
-//    """)
     @Query("""
         SELECT
             ii

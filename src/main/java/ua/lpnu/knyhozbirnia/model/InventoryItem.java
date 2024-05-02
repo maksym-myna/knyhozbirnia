@@ -6,11 +6,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
 import lombok.*;
 import ua.lpnu.knyhozbirnia.contstants.JpaValidationErrorMessages;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,11 +26,6 @@ public class InventoryItem {
     @Column(name = "item_id")
     private Integer id;
 
-//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
-    @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
-    @Column(name = "modified_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime modifiedAt;
-
     @ManyToOne
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @JoinColumn(name = "work_id")
@@ -43,16 +36,5 @@ public class InventoryItem {
     @JsonManagedReference
     private Set<Loan> loans = new HashSet<>();
 
-    @PrePersist
-    @PreUpdate
-    public void updateTimestamps() {
-        modifiedAt = LocalDateTime.now();
-    }
-
-//    @ColumnTransformer(write="?::item_medium_type")
-//    @Column(columnDefinition = "item_medium_type")
-//    public WorkMedium getWorkMedium(){
-//        return medium;
-//    }
 }
 

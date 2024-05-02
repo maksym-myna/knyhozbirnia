@@ -13,21 +13,22 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleException(NoSuchElementException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": " + e.getMessage() + "}");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"" + e.getMessage() + "\"}");
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<String> handleException(ConstraintViolationException e) {
-        return ResponseEntity.badRequest().body("{\"error\": " + e.getMessage() + "}");
+        String errors = String.join(", ", e.getConstraintViolations().stream().map(ex -> ex.getPropertyPath()  + ": " + ex.getMessage()).toList());
+        return ResponseEntity.badRequest().body("{\"error\": \"" + errors + "\"}");
     }
 
     @ExceptionHandler(LoginFailedException.class)
     public ResponseEntity<String> handleException(LoginFailedException e) {
-        return ResponseEntity.badRequest().body("{\"error\": " + e.getMessage() + "}");
+        return ResponseEntity.badRequest().body("{\"error\": \"" + e.getMessage() + "\"}");
     }
 
     @ExceptionHandler(AuthorizationServiceException.class)
     public ResponseEntity<String> handleException(AuthorizationServiceException e) {
-        return ResponseEntity.badRequest().body("{\"error\": " + e.getMessage() + "}");
+        return ResponseEntity.badRequest().body("{\"error\": \"" + e.getMessage() + "\"}");
     }
 }

@@ -8,10 +8,6 @@ import ua.lpnu.knyhozbirnia.model.Publisher;
 @Service
 public class PublisherMapper {
 
-//    public Publisher toEntity(PublisherRequest publisherRequest){
-//        return toEntity(publisherRequest, null);
-//    }
-
     public Publisher toEntity(PublisherRequest publisherRequest, Integer id){
         return Publisher
                 .builder()

@@ -19,14 +19,6 @@ public class SubjectMapper {
                 .build();
     }
 
-//    public Subject toEntity(SubjectResponse subjectResponse){
-//        return Subject
-//                .builder()
-//                .id(subjectResponse.id())
-//                .name(subjectResponse.name())
-//                .build();
-//    }
-
     public SubjectResponse toResponse(Subject subject){
         return SubjectResponse
                 .builder()

@@ -30,6 +30,11 @@ public class RatingService {
         return ratingRepository.getRatings(id, pageable);
     }
 
+    public Slice<RatingResponse> getUserRatings(Pageable pageable) {
+        Integer id = userService.getCurrentUser().getId();
+        return getUserRatings(id, pageable);
+    }
+
     public Slice<RatingResponse> getUserRatings(Integer id, Pageable pageable) {
         return ratingRepository
                 .getUserRatings(id, pageable)
@@ -46,6 +51,11 @@ public class RatingService {
     @Transactional
     @Modifying
     public RatingResponse addRating(RatingRequest ratingRequest) {
+        var ratings = ratingRepository.getUserWorksRatings(userService.getCurrentUser().getId(), ratingRequest.workId(), Pageable.unpaged()).stream().findFirst();
+        if (ratings.isPresent()) {
+            return editRating(ratings.get().id(), ratingRequest);
+        }
+
         Rating rating = Rating
                 .builder()
                 .user(userService.getCurrentUser())

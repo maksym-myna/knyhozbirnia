@@ -32,14 +32,12 @@ public class Language {
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     private Long speakers;
 
-//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "modified_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime modifiedAt;
 
     @OneToMany(mappedBy = "language", fetch = FetchType.LAZY)
     @JsonBackReference
-//    @JsonIgnore
     private Set<Work> works = new HashSet<>();
 
     @PrePersist
@@ -47,9 +45,4 @@ public class Language {
     public void updateTimestamps() {
         modifiedAt = LocalDateTime.now();
     }
-
-//    @JsonProperty("work_ids")
-//    public Set<Integer> getWorkIds() {
-//        return works != null ? works.stream().map(Work::getId).collect(Collectors.toSet()) : null;
-//    }
 }

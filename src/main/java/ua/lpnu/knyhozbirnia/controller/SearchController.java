@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ua.lpnu.knyhozbirnia.dto.author.AuthorResponse;
+import ua.lpnu.knyhozbirnia.dto.language.LanguageResponse;
 import ua.lpnu.knyhozbirnia.dto.publisher.PublisherResponse;
 import ua.lpnu.knyhozbirnia.dto.search.WorkAuthorSearchResponse;
 import ua.lpnu.knyhozbirnia.dto.subject.SubjectResponse;
+import ua.lpnu.knyhozbirnia.dto.user.UserResponse;
 import ua.lpnu.knyhozbirnia.service.SearchService;
 
 @RestController
@@ -46,5 +48,19 @@ public class SearchController {
             @RequestParam String q,
             @PageableDefault Pageable pageable) {
         return searchService.findSubjects(q, pageable);
+    }
+
+    @GetMapping("languages/")
+    public Slice<LanguageResponse> searchForLanguages (
+            @RequestParam String q,
+            @PageableDefault Pageable pageable) {
+        return searchService.findLanguages(q, pageable);
+    }
+
+    @GetMapping("users/")
+    public Slice<UserResponse> searchForUsers (
+            @RequestParam String q,
+            @PageableDefault Pageable pageable) {
+        return searchService.findUsers(q, pageable);
     }
 }

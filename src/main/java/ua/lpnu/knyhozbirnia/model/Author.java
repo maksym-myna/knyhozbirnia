@@ -35,7 +35,6 @@ public class Author {
     @Column(name = "full_name", unique = true)
     private String name;
 
-//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "modified_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime modifiedAt;
@@ -49,19 +48,4 @@ public class Author {
     public void updateTimestamps() {
         modifiedAt = LocalDateTime.now();
     }
-
-//    @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
-//    @JsonBackReference
-//    private Set<Work> works = new HashSet<>();
-//
-//    @JsonBackReference
-//    public Set<Work> getWorks(){
-//        return works;
-//    }
-
-
-//    @JsonProperty("work_ids")
-//    public Set<Integer> getWorkIds() {
-//        return works != null ? works.stream().map(Work::getId).collect(Collectors.toSet()) : null;
-//    }
 }

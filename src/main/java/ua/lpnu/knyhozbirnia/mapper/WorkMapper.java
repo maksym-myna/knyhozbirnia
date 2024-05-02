@@ -3,6 +3,7 @@ package ua.lpnu.knyhozbirnia.mapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ua.lpnu.knyhozbirnia.dto.author.AuthorRequest;
+import ua.lpnu.knyhozbirnia.dto.publisher.PublisherResponse;
 import ua.lpnu.knyhozbirnia.dto.subject.SubjectRequest;
 import ua.lpnu.knyhozbirnia.dto.work.*;
 import ua.lpnu.knyhozbirnia.model.*;
@@ -11,6 +12,8 @@ import ua.lpnu.knyhozbirnia.service.LanguageService;
 import ua.lpnu.knyhozbirnia.service.PublisherService;
 import ua.lpnu.knyhozbirnia.service.SubjectService;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,14 +28,22 @@ public class WorkMapper {
 
 
     public Work toEntity(WorkRequest request, Integer id) {
-        var authors = authorService.getByNames(request.authors().stream().map(AuthorRequest::name).toList());
+        var authorNames = request.authors().stream().map(AuthorRequest::name).toList();
+        var authors = authorService.getByNames(authorNames);
+
+
+        PublisherResponse requestedPublisher = publisherService.getPublisherByName(request.publisher().name());
+        PublisherResponse publisher = requestedPublisher;
+        if (requestedPublisher == null) {
+            publisher = publisherService.addPublisher(request.publisher());
+        }
+        var pub = new Publisher(publisher.id(), publisher.name(), Collections.emptySet(), LocalDateTime.now());
+
         var subjects = subjectService.getSubjectsByNames(request.subjects().stream().map(SubjectRequest::name).toList());
         var language = languageMapper.toEntity(languageService.getLanguage(request.language().id()));
-        var publisher = publisherMapper.toEntity(publisherService.getPublisherByName(request.publisher().name()));
         return Work
                 .builder()
                 .id(id)
-//                .modifiedAt(LocalDateTime.now())
                 .pages(request.pages())
                 .isbn(request.isbn())
                 .title(request.title())
@@ -41,7 +52,7 @@ public class WorkMapper {
                 .authors(authors)
                 .subjects(subjects)
                 .language(language)
-                .publisher(publisher)
+                .publisher(pub)
                 .copies((long)request.quantity())
                 .medium(request.medium())
                 .currentlyReading(0L)

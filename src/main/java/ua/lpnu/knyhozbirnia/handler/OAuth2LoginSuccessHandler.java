@@ -4,7 +4,6 @@ import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.services.people.v1.model.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,7 +18,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ua.lpnu.knyhozbirnia.config.DefaultProperties;
-import ua.lpnu.knyhozbirnia.contstants.RuntimeExceptionMessages;
 import ua.lpnu.knyhozbirnia.model.User;
 import ua.lpnu.knyhozbirnia.model.UserRole;
 import ua.lpnu.knyhozbirnia.service.UserService;
@@ -35,6 +33,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
@@ -63,11 +62,12 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
                 .ifPresentOrElse(user -> {
                     DefaultOAuth2User newUser = new DefaultOAuth2User(List.of(new SimpleGrantedAuthority(user.getRole().name())),
                             attributes, "email");
-                    Authentication securityAuth = new OAuth2AuthenticationToken(newUser, List.of(new SimpleGrantedAuthority(user.getRole().name())),
+                    Authentication securityAuth = new OAuth2AuthenticationToken(newUser, List.of(new SimpleGrantedAuthority(user.getRole().name()), new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
                             oAuth2AuthenticationToken.getAuthorizedClientRegistrationId());
                     SecurityContextHolder.getContext().setAuthentication(securityAuth);
                 }, () -> {
                     User user = getUserFromToken(oAuth2AuthenticationToken, attributes);
+
                     DefaultOAuth2User newUser = new DefaultOAuth2User(List.of(new SimpleGrantedAuthority(user.getUserRole().name())),
                             attributes, "email");
                     Authentication securityAuth = new OAuth2AuthenticationToken(newUser, List.of(new SimpleGrantedAuthority(user.getUserRole().name())),
@@ -77,7 +77,7 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
                     userService.saveUser(user);
                 });
         this.setAlwaysUseDefaultTargetUrl(true);
-        this.setDefaultTargetUrl(defaultProperties.getFrontend());
+        this.setDefaultTargetUrl(defaultProperties.getFrontend()+"/oauth2/redirect");
         super.onAuthenticationSuccess(request, response, authentication);
     }
 
@@ -98,6 +98,8 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
                     .setPersonFields("birthdays,genders")
                     .execute();
 
+
+
             LocalDateTime birthday = Optional.ofNullable(profile.getBirthdays())
                     .orElse(Collections.emptyList())
                     .stream()
@@ -107,7 +109,7 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
                         return LocalDate.of(date.getYear(), date.getMonth(), date.getDay()).atStartOfDay();
                     })
                     .findFirst()
-                    .orElseThrow(()->new AuthorizationServiceException(RuntimeExceptionMessages.BIRTHDAY_NOT_FOUND_EXCEPTION_MESSAGE));
+                    .orElse(getRandomBirthday());
 
             String gender = Optional.ofNullable(profile.getGenders())
                     .orElse(Collections.emptyList())
@@ -144,6 +146,16 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
         OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
 
         return accessToken.getTokenValue();
+    }
+
+    private LocalDateTime getRandomBirthday() {
+        return getRandomBirthday(LocalDate.of(1970, 1, 1), LocalDate.now().minusYears(18));
+    }
+
+    private LocalDateTime getRandomBirthday(LocalDate start, LocalDate end){
+        long daysBetween = ChronoUnit.DAYS.between(start, end);
+        long randomDays = new Random().nextInt((int) daysBetween);
+        return start.plusDays(randomDays).atStartOfDay();
     }
 
 }

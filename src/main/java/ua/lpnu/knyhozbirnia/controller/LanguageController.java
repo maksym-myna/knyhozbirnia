@@ -22,6 +22,11 @@ public class LanguageController {
         return langService.getLanguage(id);
     }
 
+    @GetMapping("name/{name}/")
+    public LanguageResponse getByName(@PathVariable String name) {
+        return langService.getLanguageByName(name);
+    }
+
     @PostMapping
     public LanguageResponse addLanguage(@RequestBody LanguageRequest language) {
         return langService.addLanguage(language);

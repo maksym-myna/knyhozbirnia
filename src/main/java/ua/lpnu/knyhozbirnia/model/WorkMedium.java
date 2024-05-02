@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum WorkMedium {
-    EBOOK("E-book"), BOOK("Book"), AUDIOBOOK("Audiobook");
+    EBOOK("EBOOK"), BOOK("BOOK"), AUDIOBOOK("AUDIOBOOK");
 
     private final String name;
 }

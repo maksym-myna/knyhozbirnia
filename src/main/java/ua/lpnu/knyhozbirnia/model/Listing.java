@@ -32,7 +32,6 @@ public class Listing {
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     private ReadingStatus readingStatus;
 
-//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "listed_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime listedAt;
@@ -48,21 +47,5 @@ public class Listing {
     @JoinColumn(name = "work_id")
     @JsonBackReference
     private Work work;
-
-//    @PrePersist
-//    @PreUpdate
-//    public void updateTimestamps() {
-//        listedAt = LocalDateTime.now();
-//    }
-
-//    @JsonProperty("user_id")
-//    public Integer getUserId() {
-//        return user != null ? user.getId() : null;
-//    }
-//
-//    @JsonProperty("work_id")
-//    public Integer getWorkId() {
-//        return work != null ? work.getId() : null;
-//    }
 }
 

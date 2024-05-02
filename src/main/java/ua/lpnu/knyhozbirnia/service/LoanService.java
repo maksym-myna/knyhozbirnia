@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ua.lpnu.knyhozbirnia.dto.loan.LoanResponse;
 import ua.lpnu.knyhozbirnia.mapper.LoanMapper;
@@ -24,16 +25,30 @@ public class LoanService {
     private final LoanMapper loanMapper;
     private final InventoryItemService itemService;
     private final UserService userService;
-    private final UserMapper userMapper;
     private final AuthService authService;
+    private final AsyncService asyncService;
 
     public Slice<LoanResponse> getUserLoans(Integer workId, Pageable pageable) {
-        return loanRepository
-                .getUserLoans(workId, pageable)
-                .map(loan -> {
-                    userMapper.setPfp(loan.user());
-                    return loan;}
-                );
+        return loanRepository.getUserLoans(workId, pageable).map(loanMapper::setPfp);
+    }
+
+    public Slice<LoanResponse> getUserUnreturnedLoans(Integer workId, Pageable pageable) {
+        return loanRepository.getUserUnreturnedLoans(workId, pageable).map(loanMapper::setPfp);
+    }
+
+    public Slice<LoanResponse> getUserReturnedLoans(Integer workId, Pageable pageable) {
+        return loanRepository.getUserReturnedLoans(workId, pageable).map(loanMapper::setPfp);
+    }
+    public Slice<LoanResponse> getUserLoans(Pageable pageable) {
+        return getUserLoans(userService.getCurrentUser().getId(), pageable);
+    }
+
+    public Slice<LoanResponse> getUserUnreturnedLoans(Pageable pageable) {
+        return getUserUnreturnedLoans(userService.getCurrentUser().getId(), pageable);
+    }
+
+    public Slice<LoanResponse> getUserReturnedLoans(Pageable pageable) {
+        return getUserReturnedLoans(userService.getCurrentUser().getId(), pageable);
     }
 
     public Slice<LoanResponse> getWorkLoans(Integer workId, Pageable pageable) {
@@ -66,7 +81,15 @@ public class LoanService {
         authService.checkEditAuthority(loan.getUser());
 
         loan.setReturnedAt(LocalDateTime.now());
-        return loanMapper.toResponse(loanRepository.save(loan));
+
+        Loan savedLoan = loanRepository.save(loan);
+
+        return loanMapper.toResponse(savedLoan);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void refreshCopies() {
+        asyncService.refreshCopiesAsync();
     }
 
     @Transactional

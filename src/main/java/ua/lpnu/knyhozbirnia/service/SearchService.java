@@ -1,40 +1,27 @@
 package ua.lpnu.knyhozbirnia.service;
 
-import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
-import org.hibernate.search.backend.lucene.LuceneExtension;
-import org.hibernate.search.backend.lucene.search.query.LuceneSearchQuery;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.lpnu.knyhozbirnia.dto.author.AuthorResponse;
+import ua.lpnu.knyhozbirnia.dto.language.LanguageResponse;
 import ua.lpnu.knyhozbirnia.dto.publisher.PublisherResponse;
 import ua.lpnu.knyhozbirnia.dto.search.WorkAuthorSearchResponse;
 import ua.lpnu.knyhozbirnia.dto.subject.SubjectResponse;
-import ua.lpnu.knyhozbirnia.mapper.AuthorMapper;
-import ua.lpnu.knyhozbirnia.mapper.PublisherMapper;
-import ua.lpnu.knyhozbirnia.mapper.SubjectMapper;
-import ua.lpnu.knyhozbirnia.mapper.WorkMapper;
-import ua.lpnu.knyhozbirnia.model.Author;
-import ua.lpnu.knyhozbirnia.model.Publisher;
-import ua.lpnu.knyhozbirnia.model.Subject;
-import ua.lpnu.knyhozbirnia.repository.AuthorRepository;
-import ua.lpnu.knyhozbirnia.repository.WorkRepository;
-
-import java.util.function.Function;
+import ua.lpnu.knyhozbirnia.dto.user.UserResponse;
+import ua.lpnu.knyhozbirnia.repository.*;
 
 @Service
 @Transactional(readOnly = true)
 @AllArgsConstructor
 public class SearchService {
-    private final EntityManager entityManager;
-    private final AuthorMapper authorMapper;
-    private final PublisherMapper publisherMapper;
-    private final SubjectMapper subjectMapper;
     private final WorkRepository workRepository;
     private final AuthorRepository authorRepository;
+    private final SubjectRepository subjectRepository;
+    private final PublisherRepository publisherRepository;
+    private final LanguageRepository languageRepository;
+    private final UserRepository userRepository;
 
     public WorkAuthorSearchResponse findWorksAndAuthors(String searchTerm, Pageable pageable) {
         var works = workRepository.findTitlesAndIdsByTitleContains(searchTerm, pageable);
@@ -50,38 +37,22 @@ public class SearchService {
     }
 
     public Slice<AuthorResponse> findAuthors(String searchTerm, Pageable pageable) {
-        return findEntities(searchTerm, pageable, Author.class, authorMapper::toResponse, "name");
+        return authorRepository.findByNameContains(searchTerm, pageable);
     }
 
     public Slice<SubjectResponse> findSubjects(String searchTerm, Pageable pageable) {
-        return findEntities(searchTerm, pageable, Subject.class, subjectMapper::toResponse, "name");
+        return subjectRepository.findByNameContains(searchTerm, pageable);
     }
 
     public Slice<PublisherResponse> findPublishers(String searchTerm, Pageable pageable) {
-        return findEntities(searchTerm, pageable, Publisher.class, publisherMapper::toResponse, "name");
+        return publisherRepository.findByNameContains(searchTerm, pageable);
     }
 
-    private <T, R> Slice<R> findEntities(String searchTerm, Pageable pageable, Class<T> entityClass, Function<T, R> mapper, String fieldPath) {
-        SearchSession searchSession = Search.session(entityManager);
+    public Slice<LanguageResponse> findLanguages(String searchTerm, Pageable pageable) {
+        return languageRepository.findByNameContains(searchTerm, pageable);
+    }
 
-        LuceneSearchQuery<T> query = searchSession
-                .search(entityClass)
-                .extension(LuceneExtension.get())
-                .where(f -> f.bool()
-                        .should(f.match().field(fieldPath).matching(searchTerm).fuzzy())
-                        .should(f.wildcard().field(fieldPath).matching("*" + searchTerm + "*"))
-                )
-                .toQuery();
-
-        var pageNumber = pageable.getPageNumber();
-        var pageSize = pageable.getPageSize();
-
-        return new SliceImpl<>(query
-                .fetchAllHits()
-                .stream()
-                .map(mapper)
-                .skip((long)pageNumber * pageSize)
-                .limit(pageSize)
-                .toList());
+    public Slice<UserResponse> findUsers(String searchTerm, Pageable pageable) {
+        return userRepository.findByNameContains(searchTerm, pageable);
     }
 }

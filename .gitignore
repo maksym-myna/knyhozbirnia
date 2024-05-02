@@ -38,3 +38,9 @@ Author/
 Publisher/
 Subject/
 Work/
+
+Dockerfile
+
+app.yaml
+
+.gcloudignore

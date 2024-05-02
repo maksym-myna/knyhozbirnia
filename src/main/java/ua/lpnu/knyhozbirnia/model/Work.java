@@ -57,13 +57,12 @@ public class Work {
     @Positive(message = JpaValidationErrorMessages.POSITIVE_VALUE_CONSTRAINT_VIOLATION)
     private Float weight;
 
-//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "modified_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime modifiedAt;
 
     @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "publisher_id", nullable = false)
     @JsonManagedReference
     @Fetch(FetchMode.JOIN)
@@ -96,18 +95,6 @@ public class Work {
     public void updateTimestamps() {
         modifiedAt = LocalDateTime.now();
     }
-
-//    @OneToMany(mappedBy = "work")
-//    @JsonManagedReference
-//    private List<Rating> ratings = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "work")
-//    @JsonManagedReference
-//    private List<Listing> listings = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "work")
-//    @JsonManagedReference
-//    private List<InventoryItem> copies = new ArrayList<>();
 
     @Formula("(SELECT COUNT(l.work_id) FROM Listing l WHERE l.work_id = work_id AND l.reading_status = 'CURRENTLY_READING')")
     private Long currentlyReading;

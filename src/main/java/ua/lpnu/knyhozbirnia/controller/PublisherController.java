@@ -7,6 +7,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import ua.lpnu.knyhozbirnia.dto.publisher.PublisherRequest;
 import ua.lpnu.knyhozbirnia.dto.publisher.PublisherResponse;
+import ua.lpnu.knyhozbirnia.dto.publisher.PublisherWorkResponse;
 import ua.lpnu.knyhozbirnia.service.PublisherService;
 
 @RestController
@@ -16,7 +17,7 @@ public class PublisherController {
     private PublisherService publisherService;
 
     @GetMapping
-    public Slice<PublisherResponse> getPublishers(@PageableDefault(size = 25) Pageable pageable) {
+    public Slice<PublisherWorkResponse> getPublishers(@PageableDefault(size = 25) Pageable pageable) {
         return publisherService.getAllPublishers(pageable);
     }
     @GetMapping("{id}/")

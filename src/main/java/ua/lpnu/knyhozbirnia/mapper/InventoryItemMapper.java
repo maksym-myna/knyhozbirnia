@@ -7,13 +7,12 @@ import ua.lpnu.knyhozbirnia.model.InventoryItem;
 @Service
 public class InventoryItemMapper {
     public InventoryItemResponse toResponse(InventoryItem item) {
-        return new InventoryItemResponse(item.getId(), item.getModifiedAt());
+        return new InventoryItemResponse(item.getId());
     }
 
     public InventoryItem toEntity(InventoryItemResponse itemResponse) {
         return InventoryItem.builder()
                 .id(itemResponse.id())
-                .modifiedAt(itemResponse.modifiedAt())
                 .build();
     }
 }

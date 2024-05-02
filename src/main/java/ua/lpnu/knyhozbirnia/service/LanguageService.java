@@ -25,8 +25,11 @@ public class LanguageService {
     }
 
     public LanguageResponse getLanguage(String id) {
-        Language language = langRepository.findById(id).orElse(null);
-        return language == null ? null : langMapper.toResponse(language);
+        return langRepository.findLanguageById(id).orElseThrow();
+    }
+
+    public LanguageResponse getLanguageByName(String name) {
+        return langRepository.findLanguageByName(name).orElseThrow();
     }
 
     @Transactional

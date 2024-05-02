@@ -17,6 +17,7 @@ import ua.lpnu.knyhozbirnia.model.ReadingStatus;
 import ua.lpnu.knyhozbirnia.repository.ListingRepository;
 import ua.lpnu.knyhozbirnia.repository.WorkRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,11 +36,27 @@ public class ListingService {
         return new GroupedListingResponse(listings);
     }
 
+    public GroupedListingResponse getUserListings(Pageable pageable) {
+        var id = userService.getCurrentUser().getId();
+        return getUserListings(id, pageable);
+    }
+
     public GroupedListingResponse getUserListings(Integer id, Pageable pageable) {
         var listings = listingRepository.getUserListings(id, pageable).map(listing -> {
             userMapper.setPfp(listing.user());
             return listing;
         });
+        return new GroupedListingResponse(listings);
+    }
+
+
+    public GroupedListingResponse getUserWorksListings(Integer workId, Pageable pageable) {
+        var id = userService.getCurrentUser().getId();
+        return getUserWorksListings(id, workId, pageable);
+    }
+
+    public GroupedListingResponse getUserWorksListings(Integer userId, Integer workId, Pageable pageable) {
+        var listings =  listingRepository.getUserWorkListings(userId, workId, pageable);
         return new GroupedListingResponse(listings);
     }
 
@@ -59,6 +76,7 @@ public class ListingService {
                 .user(userService.getCurrentUser())
                 .work(workRepository.findById(listingRequest.workId()).orElseThrow())
                 .readingStatus(listingRequest.status())
+                .listedAt(LocalDateTime.now())
                 .build();
         return listingMapper.toResponse(listingRepository.save(listing));
     }
@@ -71,5 +89,17 @@ public class ListingService {
         authService.checkEditAuthority(listing.getUser());
 
         listingRepository.deleteById(id);
+    }
+
+    @Transactional
+    @Modifying
+    public void deleteWorkListing(Integer id, ReadingStatus status) {
+        var userId = userService.getCurrentUser().getId();
+        var userWorkListings = listingRepository.getUserWorkListings(userId, id, Pageable.unpaged());
+        var foundListing =  userWorkListings.filter(listing -> listing.status() == status).stream().findAny().orElseThrow();
+
+        authService.checkEditAuthority(userMapper.toEntity(foundListing.user()));
+
+        listingRepository.deleteById(foundListing.id());
     }
 }

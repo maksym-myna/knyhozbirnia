@@ -1,0 +1,378 @@
+{
+	"dataset_name": "library",
+	"project_id": "library-414223",
+	"dimensions": [
+		{
+			"title": "medium",
+			"attributes": [
+				{
+					"title": "medium_id",
+					"type": "INT",
+					"primary_key": "true"
+				},
+				{
+					"title": "medium_name",
+					"type": "STRING",
+					"primary_key": "false"
+				}
+			]
+		},
+		{
+			"title": "author",
+			"attributes": [
+				{
+					"title": "author_id",
+					"type": "INT",
+					"primary_key": "true"
+				},
+				{
+					"title": "author_name",
+					"type": "STRING",
+					"primary_key": "false"
+				}
+			]
+		},
+		{
+			"title": "publisher",
+			"attributes": [
+				{
+					"title": "publisher_id",
+					"type": "INT",
+					"primary_key": "true"
+				},
+				{
+					"title": "publisher_name",
+					"type": "STRING",
+					"primary_key": "false"
+				}
+			]
+		},
+		{
+			"title": "listing_type",
+			"attributes": [
+				{
+					"title": "listing_type_id",
+					"type": "INT",
+					"primary_key": "true"
+				},
+				{
+					"title": "listing_type_name",
+					"type": "STRING",
+					"primary_key": "false"
+				}
+			]
+		},
+		{
+			"title": "subject",
+			"attributes": [
+				{
+					"title": "subject_id",
+					"type": "INT",
+					"primary_key": "true"
+				},
+				{
+					"title": "subject_name",
+					"type": "STRING",
+					"primary_key": "false"
+				}
+			]
+		},
+		{
+			"title": "language",
+			"attributes": [
+				{
+					"title": "language_id",
+					"type": "INT",
+					"primary_key": "true"
+				},
+				{
+					"title": "language_name",
+					"type": "STRING",
+					"primary_key": "false"
+				},
+				{
+					"title": "speakers",
+					"type": "INT",
+					"primary_key": "false"
+				}
+			]
+		},
+		{
+			"title": "date",
+			"attributes": [
+				{
+					"title": "date",
+					"type": "DATE",
+					"primary_key": "false",
+					"subLevel": {
+						"title": "month",
+						"type": "STRING",
+						"primary_key": "false",
+						"subLevel": {
+							"title": "quarter",
+							"type": "STRING",
+							"primary_key": "false",
+							"subLevel": {
+								"title": "year",
+								"type": "INT",
+								"primary_key": "false"
+							}
+						}
+					}
+				},
+				{
+					"title": "date_id",
+					"type": "INT",
+					"primary_key": "true"
+				}
+			]
+		},
+		{
+			"title": "user",
+			"attributes": [
+				{
+					"title": "user_id",
+					"type": "INT",
+					"primary_key": "true"
+				},
+				{
+					"title": "age_group",
+					"type": "STRING",
+					"primary_key": "false"
+				},
+				{
+					"title": "gender",
+					"type": "STRING",
+					"primary_key": "false"
+				},
+				{
+					"title": "first_name",
+					"type": "STRING",
+					"primary_key": "false",
+					"subLevel": {
+						"title": "full_name",
+						"type": "STRING",
+						"primary_key": "false"
+					}
+				}
+			]
+		},
+		{
+			"title": "work",
+			"attributes": [
+				{
+					"title": "work_id",
+					"type": "INT",
+					"primary_key": "true"
+				},
+				{
+					"title": "publisher_id",
+					"type": "INT",
+					"primary_key": "false",
+					"foreign_key": "publisher"
+				},
+				{
+					"title": "subject_id",
+					"type": "INT",
+					"primary_key": "false",
+					"foreign_key": "subject"
+				},
+				{
+					"title": "title",
+					"type": "STRING",
+					"primary_key": "false"
+				},
+				{
+					"title": "release_year",
+					"type": "INT",
+					"primary_key": "false"
+				},
+				{
+					"title": "weight",
+					"type": "FLOAT",
+					"primary_key": "false"
+				}
+			]
+		},
+		{
+			"title": "work_author",
+			"attributes": [
+				{
+					"title": "work_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "work"
+				},
+				{
+					"title": "author_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "author"
+				},
+				{
+					"title": "coefficient",
+					"type": "FLOAT",
+					"primary_key": "false"
+				}
+			]
+		}
+	],
+	"facts": [
+		{
+			"title": "return_fact",
+			"definition": "Дані про повернення книг до бібліотеки.",
+			"metrics": [
+				{
+					"title": "pages",
+					"type": "INT"
+				},
+				{
+					"title": "items_left",
+					"type": "INT"
+				},
+				{
+					"title": "work_age",
+					"type": "INT"
+				},
+				{
+					"title": "reader_age",
+					"type": "INT"
+				},
+				{
+					"title": "days_loaned",
+					"type": "INT"
+				}
+			],
+			"attributes": [
+				{
+					"title": "user_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "user"
+				},
+				{
+					"title": "date_id",
+					"type": "STRING",
+					"primary_key": "true",
+					"foreign_key": "date"
+				},
+				{
+					"title": "work_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "work"
+				},
+				{
+					"title": "medium_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "medium"
+				},
+				{
+					"title": "language_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "language"
+				}
+			]
+		},
+		{
+			"title": "rating_fact",
+			"definition": "Дані про оцінювання книг.",
+			"metrics": [
+				{
+					"title": "pages",
+					"type": "INT"
+				},
+				{
+					"title": "score",
+					"type": "INT"
+				},
+				{
+					"title": "work_age",
+					"type": "INT"
+				},
+				{
+					"title": "reader_age",
+					"type": "INT"
+				}
+			],
+			"attributes": [
+				{
+					"title": "user_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "user"
+				},
+				{
+					"title": "date_id",
+					"type": "INT",
+					"primary_key": "false",
+					"foreign_key": "date"
+				},
+				{
+					"title": "work_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "work"
+				},
+				{
+					"title": "language_id",
+					"type": "STRING",
+					"primary_key": "false",
+					"foreign_key": "language"
+				}
+			]
+		},
+		{
+			"title": "listing_fact",
+			"definition": "Дані про додавання книг у списки.",
+			"metrics": [
+				{
+					"title": "pages",
+					"type": "INT"
+				},
+				{
+					"title": "reader_age",
+					"type": "INT"
+				},
+				{
+					"title": "work_age",
+					"type": "INT"
+				}
+			],
+			"attributes": [
+				{
+					"title": "date_id",
+					"type": "INT",
+					"primary_key": "false",
+					"foreign_key": "date"
+				},
+				{
+					"title": "language_id",
+					"type": "STRING",
+					"primary_key": "false",
+					"foreign_key": "language"
+				},
+				{
+					"title": "listing_type_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "listing_type"
+				},
+				{
+					"title": "user_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "user"
+				},
+				{
+					"title": "work_id",
+					"type": "INT",
+					"primary_key": "true",
+					"foreign_key": "work"
+				}
+			]
+		}
+	]
+}

@@ -2,6 +2,7 @@ package ua.lpnu.knyhozbirnia.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.*;
@@ -21,6 +22,7 @@ import ua.lpnu.knyhozbirnia.repository.WorkRepository;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -35,15 +37,18 @@ public class WorkService {
     private final SubjectService subjectService;
     private final AuthorService authorService;
     private final InventoryItemService itemService;
+    private final UserService userService;
 
     private final EntityManager entityManager;
     public Slice<PartialWorkResponse> getAllWorks(
             Pageable pageable,
-            List<Integer> languageIds,
+            List<String> languages,
             List<String> subjectNames,
             List<String> publisherNames,
             List<String> authorNames,
-            List<WorkMedium> mediums,
+            List<String> listingTypes,
+            List<Integer> ratings,
+            List<String> mediums,
             Integer minReleaseYear,
             Integer maxReleaseYear,
             Float minWeight,
@@ -51,13 +56,16 @@ public class WorkService {
             Integer minPages,
             Integer maxPages,
             Boolean isAvailable,
-            Boolean hasCopies
+            Boolean isAccounted,
+            Integer userId
     ) {
         var query = buildSelectionQuery(
-                languageIds,
+                languages,
                 subjectNames,
                 publisherNames,
                 authorNames,
+                listingTypes,
+                ratings,
                 mediums,
                 minReleaseYear,
                 maxReleaseYear,
@@ -66,7 +74,8 @@ public class WorkService {
                 minPages,
                 maxPages,
                 isAvailable,
-                hasCopies
+                isAccounted,
+                userId
         );
 
         int pageSize = pageable.getPageSize();
@@ -105,7 +114,6 @@ public class WorkService {
     @Modifying
     public WorkResponse upsertWork(WorkRequest workRequest, Integer id) {
         Work mappedWork = workMapper.toEntity(workRequest, id);
-
         if (mappedWork.getLanguage() == null) {
             throw new ConstraintViolationException(RuntimeExceptionMessages.LANGUAGE_IS_REQUIRED_EXCEPTION_MESSAGE, null);
         }
@@ -114,7 +122,7 @@ public class WorkService {
             var publisher = publisherMapper.toEntity(publisherService.addPublisher(workRequest.publisher()));
             mappedWork.setPublisher(publisher);
         }
-
+        System.out.println(1);
         addEntities(mappedWork.getSubjects(), workRequest.subjects(), Subject::getName, SubjectRequest::name, subjectService::addSubjects);
         addEntities(mappedWork.getAuthors(), workRequest.authors(), Author::getName, AuthorRequest::name, authorService::addAuthors);
 
@@ -149,11 +157,13 @@ public class WorkService {
     }
 
     private Query buildSelectionQuery(
-            List<Integer> languageIds,
+            List<String> languages,
             List<String> subjectNames,
             List<String> publisherNames,
             List<String> authorNames,
-            List<WorkMedium> mediums,
+            List<String> listingTypes,
+            List<Integer> ratings,
+            List<String> mediums,
             Integer minReleaseYear,
             Integer maxReleaseYear,
             Float minWeight,
@@ -161,7 +171,8 @@ public class WorkService {
             Integer minPages,
             Integer maxPages,
             Boolean isAvailable,
-            Boolean hasCopies
+            Boolean isAccounted,
+            Integer userId
     ){
         int MAX_PARAMS = 11;
         int MAX_QUERY_LENGTH = 1100;
@@ -169,34 +180,66 @@ public class WorkService {
         List<String> clauses = new ArrayList<>(MAX_PARAMS);
         Map<String, Object> params = new LinkedHashMap<>(MAX_PARAMS);
 
-        addClauseAndParam(clauses, params, workRepository.FILTER_LANGUAGES_BY_IDS, "languageIds", languageIds);
-        addClauseAndParam(clauses, params, workRepository.FILTER_SUBJECTS_BY_NAMES, "subjectNames", subjectNames);
-        addClauseAndParam(clauses, params, workRepository.FILTER_PUBLISHERS_BY_NAMES, "publisherNames", publisherNames);
-        addClauseAndParam(clauses, params, workRepository.FILTER_AUTHORS_BY_NAMES, "authorNames", authorNames);
-        addClauseAndParam(clauses, params, workRepository.FILTER_MEDIUMS_BY_NAMES, "mediums", mediums);
-        addClauseAndParam(clauses, params, workRepository.FILTER_MIN_RELEASE_YEAR, "minReleaseYear", minReleaseYear);
-        addClauseAndParam(clauses, params, workRepository.FILTER_MAX_RELEASE_YEAR, "maxReleaseYear", maxReleaseYear);
-        addClauseAndParam(clauses, params, workRepository.FILTER_MIN_WEIGHT, "minWeight", minWeight);
-        addClauseAndParam(clauses, params, workRepository.FILTER_MAX_WEIGHT, "maxWeight", maxWeight);
-        addClauseAndParam(clauses, params, workRepository.FILTER_MIN_PAGES, "minPages", minPages);
-        addClauseAndParam(clauses, params, workRepository.FILTER_MAX_PAGES, "maxPages", maxPages);
-
-        String having = "";
-        if (isAvailable) {
-            having = " HAVING " + workRepository.FILTER_AVAILABLE;
-        } else if (hasCopies) {
-            having = " HAVING " + workRepository.FILTER_WORKS_WITH_COPIES;
+        String selectBase;
+        String userClause = null;
+        if (ratings != null) {
+            selectBase = workRepository.SELECT_WORK_RATINGS_QUERY_NO_GROUP_BY;
+            userClause = workRepository.FILTER_RATING_USER;
+        } else {
+            selectBase = workRepository.SELECT_WORK_BASIC_QUERY_NO_GROUP_BY;
         }
 
+        if (listingTypes != null) {
+            if (ratings != null) {
+                selectBase = workRepository.SELECT_WORK_FULL_QUERY_NO_GROUP_BY;
+                userClause = workRepository.FILTER_USER;
+            } else {
+                selectBase = workRepository.SELECT_WORK_LISTINGS_QUERY_NO_GROUP_BY;
+                userClause = workRepository.FILTER_LISTING_USER;
+            }
+            clauses.add(workRepository.FILTER_LISTINGS + listingTypes.stream().map(medium -> "'" + medium + "'").collect(Collectors.joining(", ")) + ')');
+        }
+
+        if (mediums != null) {
+            clauses.add(workRepository.FILTER_MEDIUMS_BY_NAMES + mediums.stream().map(medium -> "'" + medium + "'").collect(Collectors.joining(", ")) + ')');
+        }
+
+        System.out.println(selectBase);
+        System.out.println(userClause);
+        System.out.println(clauses);
+        if (userClause != null) {
+            if (userId==null){
+                userId = userService.getCurrentUser().getId();
+            }
+            addClauseAndParam(clauses, params, userClause, "userId", userId);
+        }
+        addClauseAndParam(clauses, params, workRepository.FILTER_RATINGS, "ratings", ratings);
+        System.out.println(ratings);
+        addClauseAndParam(clauses, params, workRepository.FILTER_MIN_RELEASE_YEAR, "minReleaseYear", minReleaseYear);
+        addClauseAndParam(clauses, params, workRepository.FILTER_MAX_RELEASE_YEAR, "maxReleaseYear", maxReleaseYear);
+        addClauseAndParam(clauses, params, workRepository.FILTER_MIN_PAGES, "minPages", minPages);
+        addClauseAndParam(clauses, params, workRepository.FILTER_MAX_PAGES, "maxPages", maxPages);
+        addClauseAndParam(clauses, params, workRepository.FILTER_MIN_WEIGHT, "minWeight", minWeight);
+        addClauseAndParam(clauses, params, workRepository.FILTER_MAX_WEIGHT, "maxWeight", maxWeight);
+        addClauseAndParam(clauses, params, workRepository.FILTER_SUBJECTS_BY_NAMES, "subjectNames", subjectNames);
+        addClauseAndParam(clauses, params, workRepository.FILTER_LANGUAGES_BY_IDS, "languages", languages);
+        addClauseAndParam(clauses, params, workRepository.FILTER_PUBLISHERS_BY_NAMES, "publisherNames", publisherNames);
+        addClauseAndParam(clauses, params, workRepository.FILTER_AUTHORS_BY_NAMES, "authorNames", authorNames);
+
+        String having = isAvailable
+                ? " HAVING " + workRepository.FILTER_AVAILABLE
+                : isAccounted ? " HAVING " + workRepository.FILTER_WORKS_WITH_COPIES
+                : "";
+
         StringBuilder queryBuilder = new StringBuilder(MAX_QUERY_LENGTH);
-        queryBuilder.append(workRepository.SELECT_WORK_QUERY_NO_GROUP_BY);
+        queryBuilder.append(selectBase);
         if (!clauses.isEmpty()){
             queryBuilder.append(" WHERE ");
             queryBuilder.append(String.join(" AND ", clauses));
         }
         String query = queryBuilder.append(workRepository.SELECT_WORK_GROUP_BY).append(having).toString();
 
-        Query compiledQuery = entityManager.createQuery(query, PartialWorkResponse.class);
+        TypedQuery<PartialWorkResponse> compiledQuery = entityManager.createQuery(query, PartialWorkResponse.class);
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             compiledQuery.setParameter(entry.getKey(), entry.getValue());
         }

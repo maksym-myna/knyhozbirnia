@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.lpnu.knyhozbirnia.dto.publisher.PublisherRequest;
 import ua.lpnu.knyhozbirnia.dto.publisher.PublisherResponse;
+import ua.lpnu.knyhozbirnia.dto.publisher.PublisherWorkResponse;
 import ua.lpnu.knyhozbirnia.mapper.PublisherMapper;
 import ua.lpnu.knyhozbirnia.repository.PublisherRepository;
 
@@ -18,7 +19,7 @@ public class PublisherService {
     private final PublisherRepository publisherRepository;
     private final PublisherMapper publisherMapper;
 
-    public Slice<PublisherResponse> getAllPublishers(Pageable pageable) {
+    public Slice<PublisherWorkResponse> getAllPublishers(Pageable pageable) {
         return publisherRepository.findAll(pageable);
     }
 

@@ -22,4 +22,9 @@ public class LoanMapper {
                 .returnedAt(loan.getReturnedAt())
                 .build();
     }
+
+    public LoanResponse setPfp (LoanResponse loan) {
+        userMapper.setPfp(loan.user());
+        return loan;
+    }
 }

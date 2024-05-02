@@ -16,7 +16,6 @@ public class AuthorMapper {
                 .builder()
                 .id(id)
                 .name(authorRequest.name())
-//                .modifiedAt(LocalDateTime.now())
                 .build();
     }
 

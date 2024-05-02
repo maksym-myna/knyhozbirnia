@@ -22,11 +22,13 @@ public class WorkController {
     @GetMapping
     public Slice<PartialWorkResponse> getWorks(
             @PageableDefault(size = 25) Pageable pageable,
-            @RequestParam(required = false) List<Integer> languageIds,
-            @RequestParam(required = false) List<String> subjectNames,
-            @RequestParam(required = false) List<String> publisherNames,
-            @RequestParam(required = false) List<String> authorNames,
-            @RequestParam(required = false) List<WorkMedium> mediums,
+            @RequestParam(required = false) List<String> languages,
+            @RequestParam(required = false, name="subjects") List<String> subjectNames,
+            @RequestParam(required = false, name="publishers") List<String> publisherNames,
+            @RequestParam(required = false, name="authors") List<String> authorNames,
+            @RequestParam(required = false, name="listings") List<String> listings,
+            @RequestParam(required = false) List<Integer> ratings,
+            @RequestParam(required = false) List<String> mediums,
             @RequestParam(required = false) Integer minReleaseYear,
             @RequestParam(required = false) Integer maxReleaseYear,
             @RequestParam(required = false) Float minWeight,
@@ -34,14 +36,16 @@ public class WorkController {
             @RequestParam(required = false) Integer minPages,
             @RequestParam(required = false) Integer maxPages,
             @RequestParam(required = false, defaultValue = "true") Boolean isAvailable,
-            @RequestParam(required = false, defaultValue = "false") Boolean hasCopies
+            @RequestParam(required = false, defaultValue = "false") Boolean isAccounted,
+            @RequestParam(required = false) Integer userId
     ) {
         return workService.getAllWorks(
-                pageable,
-                languageIds,
+                pageable, languages,
                 subjectNames,
                 publisherNames,
                 authorNames,
+                listings,
+                ratings,
                 mediums,
                 minReleaseYear,
                 maxReleaseYear,
@@ -50,7 +54,8 @@ public class WorkController {
                 minPages,
                 maxPages,
                 isAvailable,
-                hasCopies
+                isAccounted,
+                userId
         );
     }
 

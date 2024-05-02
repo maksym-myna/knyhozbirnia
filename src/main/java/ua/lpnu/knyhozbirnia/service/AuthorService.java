@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.lpnu.knyhozbirnia.dto.author.AuthorRequest;
 import ua.lpnu.knyhozbirnia.dto.author.AuthorResponse;
+import ua.lpnu.knyhozbirnia.dto.author.AuthorWorkResponse;
 import ua.lpnu.knyhozbirnia.mapper.AuthorMapper;
 import ua.lpnu.knyhozbirnia.model.Author;
 import ua.lpnu.knyhozbirnia.repository.AuthorRepository;
@@ -21,7 +22,7 @@ public class AuthorService {
     private final AuthorRepository authorRepository;
     private final AuthorMapper authorMapper;
 
-    public Slice<AuthorResponse> getAllAuthors(Pageable pageable) {
+    public Slice<AuthorWorkResponse> getAllAuthors(Pageable pageable) {
         return authorRepository.findAll(pageable);
     }
 

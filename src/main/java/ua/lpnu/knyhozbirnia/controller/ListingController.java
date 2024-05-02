@@ -9,7 +9,6 @@ import ua.lpnu.knyhozbirnia.dto.listing.ListingRequest;
 import ua.lpnu.knyhozbirnia.dto.listing.ListingResponse;
 import ua.lpnu.knyhozbirnia.dto.listing.GroupedListingResponse;
 import ua.lpnu.knyhozbirnia.model.ReadingStatus;
-import ua.lpnu.knyhozbirnia.model.WorkMedium;
 import ua.lpnu.knyhozbirnia.service.ListingService;
 
 import java.util.List;
@@ -43,6 +42,10 @@ public class ListingController {
         return listingService.addListing(listing);
     }
 
+    @DeleteMapping
+    public void deleteListing(@RequestParam Integer workId, @RequestParam ReadingStatus status) {
+        listingService.deleteWorkListing(workId, status);
+    }
     @DeleteMapping("{id}/")
     public void deleteListing(@PathVariable("id") Integer id) {
         listingService.deleteListing(id);

@@ -32,7 +32,6 @@ public class Rating {
     @Max(value = 5, message = JpaValidationErrorMessages.MAXIMUM_SIZE_CONSTRAINT_VIOLATION)
     private Integer score;
 
-//    @NotNull(message = JpaValidationErrorMessages.NOT_NULL_CONSTRAINT_VIOLATION)
     @PastOrPresent(message = JpaValidationErrorMessages.PAST_OR_PRESENT_DATE_CONSTRAINT_VIOLATION)
     @Column(name = "rated_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime ratedAt;

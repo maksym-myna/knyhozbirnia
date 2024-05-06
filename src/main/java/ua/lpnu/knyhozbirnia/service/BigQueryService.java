@@ -29,6 +29,7 @@ public class BigQueryService {
 
     public ByteArrayInputStream downloadCSV(String tableName, List<String> fields, Integer limit, LocalDate minDate, LocalDate maxDate, Boolean writeHeader) throws IOException, ChangeSetPersister.NotFoundException, InterruptedException {
         String query = createQuery(tableName, fields, limit, minDate.atStartOfDay(), maxDate.atStartOfDay());
+
         System.out.println(query);
         QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(query).build();
 
@@ -61,34 +62,58 @@ public class BigQueryService {
         List<String> allFields = getAllFields(fact).stream().filter(fields::contains).toList();
         Map<String, List<String>> joinedFields = getAllJoinedFields(fact)
                 .entrySet().stream()
-                .map(entry -> new AbstractMap.SimpleEntry<>(
-                        entry.getKey(),
-                        entry.getValue().stream().filter(fields::contains).collect(Collectors.toList())))
+//                .map(entry -> new AbstractMap.SimpleEntry<>(
+//                        entry.getKey(),
+//                        entry.getValue().stream().filter(fields::contains).collect(Collectors.toList())))
                 .filter(entry -> !entry.getValue().isEmpty())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+        String joinClauses = joinedFields.entrySet().stream()
+                .sorted(Map.Entry.<String, List<String>>comparingByKey().reversed())
+                .filter(entry -> !entry.getKey().equals("work_author") && !entry.getKey().equals("author"))
+                .map(entry -> "join " + metadata.getDatasetName() + "." + entry.getKey() + " using(" + entry.getKey()  + "_id)")
+                .collect(Collectors.joining(" ")) + " join " + metadata.getDatasetName() + ".work_author using(work_id) join " + metadata.getDatasetName() + ".author using(author_id)";
         List<String> selectedFields = getAllSelectedFields(allFields, joinedFields);
         String selects = getSelects(selectedFields);
-        String joins = getJoins(joinedFields);
+
+//        String joins = getJoins(joinedFields);
         String wheres = getWheres(minDate, maxDate);
 
-        return "SELECT " + selects + " FROM " + metadata.getDatasetName() + '.' + tableName + " " + joins + " " + wheres + " LIMIT " + limit;
+        return "SELECT " + String.join(",", fields) + " FROM " + metadata.getDatasetName() + '.' + tableName + " " + joinClauses + " " + wheres + " LIMIT " + limit;
     }
 
     public Map<String, Map<String, List<String>>> getAllFactsSelectableFields() {
-        return metadata
+        var map = metadata
                 .getFacts()
                 .stream()
                 .collect(Collectors.toMap(
                         Fact::getTitle,
                         fact -> {
                             try {
-                                return getAllSelectableFields(fact.getTitle());
+                                return getAllSelectableFieldsNoIds(fact.getTitle());
                             } catch (ChangeSetPersister.NotFoundException e) {
                                 throw new RuntimeException(e);
                             }
                         }
                 ));
+
+        for(var entry : map.entrySet()) {
+            entry.getValue().values().removeIf(List::isEmpty);
+        }
+        return map;
+    }
+
+    public Map<String, List<String>> getAllSelectableFieldsNoIds(String tableName) throws ChangeSetPersister.NotFoundException {
+        Fact fact = findFact(tableName);
+        List<String> allFields = getAllFields(fact);
+        Map<String, List<String>> joinedFields = getAllJoinedFields(fact);
+        joinedFields.put(tableName, allFields);
+        joinedFields = joinedFields.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream().filter(name -> !name.endsWith("_id") && !name.equals("coefficient")).collect(Collectors.toList())
+                ));
+        return joinedFields;
     }
 
     public Map<String, List<String>> getAllSelectableFields(String tableName) throws ChangeSetPersister.NotFoundException {
@@ -182,8 +207,8 @@ public class BigQueryService {
         String joins = joinedFields.entrySet().stream()
                 .map(entry -> "left join " + metadata.getDatasetName()  + "." + entry.getKey() + " using(" +
                         entry.getValue().stream()
-                                .filter(value -> value.endsWith("_id"))
-                                .findFirst()
+                                .map(x -> entry.getKey().equals("work_author" ) || entry.getKey().equals("author" ) ? "work_id) join " + metadata.getDatasetName() + ".author using(author_id" : entry.getKey() + "_id")
+                                .findAny()
                                 .orElse("") + ")")
                 .collect(Collectors.joining(" "));
         if (!joins.contains("using(date_id)")){

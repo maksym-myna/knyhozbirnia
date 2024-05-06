@@ -56,7 +56,6 @@ public interface LoanRepository extends CrudRepository<Loan, Integer> {
         """)
     LoanResponse getLoan(@Param("loanId") Integer loanId);
 
-    @Procedure("refresh_available_copies")
+    @Procedure("refresh_available_copies_efficiently")
     void refreshAvailableCopies();
-
 }

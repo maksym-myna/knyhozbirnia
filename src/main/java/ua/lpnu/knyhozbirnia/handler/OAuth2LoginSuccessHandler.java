@@ -125,8 +125,8 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
             return User
                     .builder()
                     .email(attributes.get("email").toString())
-                    .firstName(attributes.get("given_name").toString())
-                    .lastName(attributes.get("family_name").toString())
+                    .firstName(attributes.getOrDefault("given_name", "_").toString())
+                    .lastName(attributes.getOrDefault("family_name", "_").toString())
                     .gender(gender)
                     .birthday(birthday)
                     .pfpUrl(pfpUrl)

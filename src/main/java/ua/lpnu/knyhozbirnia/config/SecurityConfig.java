@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/users/").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.GET, "/biqquery/**", "/python/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "listings/work/{work_id}/", "ratings/work/{work_id}/", "loans/work/{work_id}/", "loans/item/{item_id}/").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/authors/**", "/works/**",
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/authors/**", "/works/**",
                                 "/languages/**", "search/**", "publishers/**", "subjects/**", "listings/statuses/").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> {

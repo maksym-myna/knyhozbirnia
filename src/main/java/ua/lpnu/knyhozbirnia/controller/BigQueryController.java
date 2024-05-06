@@ -43,6 +43,6 @@ public class BigQueryController {
     }
     @GetMapping("{factName}/")
     public Map<String, List<String>> getFields(@PathVariable(name = "factName") String factName) throws ChangeSetPersister.NotFoundException {
-        return bigQueryService.getAllSelectableFields(factName);
+        return bigQueryService.getAllSelectableFieldsNoIds(factName);
     }
 }

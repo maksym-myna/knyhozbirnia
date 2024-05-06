@@ -66,6 +66,7 @@ public interface WorkRepository extends CrudRepository<Work, Integer> {
             LEFT JOIN w.subjects s
         """;
 
+    String JOIN_AVAILABLE_COPIES = "JOIN AvailableCopies ac1_0 ON ac1_0.id = w.id";
     String SELECT_WORK_GROUP_BY = "GROUP BY w.id, p.id, l.id";
     String FILTER_LANGUAGES_BY_IDS = "(l.name IN (:languages))";
     String FILTER_SUBJECTS_BY_NAMES = "(s.name IN (:subjectNames))";
@@ -80,7 +81,7 @@ public interface WorkRepository extends CrudRepository<Work, Integer> {
     String FILTER_LISTINGS = "li.readingStatus in (";
     String FILTER_MIN_PAGES = "(w.pages >= :minPages)";
     String FILTER_MAX_PAGES = "(w.pages <= :maxPages)";
-    String FILTER_AVAILABLE = "(" + SELECT_AVAILABLE_WORKS_COUNT + ") > 0";
+    String FILTER_AVAILABLE = "(ac1_0.qty > 0)";
     String FILTER_WORKS_WITH_COPIES = "(SELECT COUNT(ii.work.id) FROM InventoryItem ii WHERE ii.work.id = w.id) > 0";
     String SELECT_WORK_QUERY = SELECT_WORK_BASIC_QUERY_NO_GROUP_BY + ' ' + SELECT_WORK_GROUP_BY;
     String SELECT_WORK_BY_ID_QUERY = SELECT_WORK_BY_ID_NO_FILTER + " WHERE w.id = :id " + SELECT_WORK_GROUP_BY;

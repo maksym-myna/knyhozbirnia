@@ -237,10 +237,12 @@ public class WorkService {
         addClauseAndParam(clauses, params, workRepository.FILTER_PUBLISHERS_BY_NAMES, "publisherNames", publisherNames);
         addClauseAndParam(clauses, params, workRepository.FILTER_AUTHORS_BY_NAMES, "authorNames", authorNames);
 
-        String having = isAvailable
-                ? " HAVING " + workRepository.FILTER_AVAILABLE
-                : isAccounted ? " HAVING " + workRepository.FILTER_WORKS_WITH_COPIES
-                : "";
+        if (isAvailable) {
+            selectBase += " " + WorkRepository.JOIN_AVAILABLE_COPIES;
+            clauses.add(WorkRepository.FILTER_AVAILABLE);
+        } else if (isAccounted) {
+            clauses.add(WorkRepository.FILTER_WORKS_WITH_COPIES);
+        }
 
         StringBuilder queryBuilder = new StringBuilder(MAX_QUERY_LENGTH);
         queryBuilder.append(selectBase);
@@ -248,7 +250,7 @@ public class WorkService {
             queryBuilder.append(" WHERE ");
             queryBuilder.append(String.join(" AND ", clauses));
         }
-        String query = queryBuilder.append(workRepository.SELECT_WORK_GROUP_BY).append(having).toString();
+        String query = queryBuilder.append(workRepository.SELECT_WORK_GROUP_BY).append(" ").toString();
 
         TypedQuery<PartialWorkResponse> compiledQuery = entityManager.createQuery(query, PartialWorkResponse.class);
         for (Map.Entry<String, Object> entry : params.entrySet()) {

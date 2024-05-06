@@ -14,6 +14,9 @@ public class AuthorWorkCount {
     @Column(name = "full_name")
     private String name;
 
+    @Column
+    private String isbn;
+
     @Column(name = "work_count")
     private Long qty;
 }
